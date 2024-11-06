@@ -561,6 +561,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   frog: {fileID: 1840563118}
   level1: {fileID: 3408921600230551104, guid: d7c17542c27ee1c4a807f710f39f0b1c, type: 3}
+  obstaclePrefabs:
+  - {fileID: 5455146885966708473, guid: 31e8bc124f6923a4c9293b8301172628, type: 3}
+  level1Lanes: []
 --- !u!4 &1915594668
 Transform:
   m_ObjectHideFlags: 0
