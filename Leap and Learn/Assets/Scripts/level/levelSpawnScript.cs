@@ -39,7 +39,7 @@ public class levelSpawnScript : MonoBehaviour
         int randomLevel = Random.Range(0, levelTemplates.Length);
 
         // maxViewDistance is the furthest point a player can be before they can see off the edge of the "level" with the camera
-        int maxViewDistance = (int)lastPos.y - 2; // -2 by default as the player can see 2 tiles behind the frog
+        int maxViewDistance = (int)lastPos.y - 3; // -2 by default as the player can see 2 tiles behind the frog (MADE to -3 to accomodate the new animation)
         if (frog.position.y >= maxViewDistance)
         {
             // Spawn a new level and delete the oldest level that is now offscreen
