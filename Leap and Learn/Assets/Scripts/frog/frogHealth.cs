@@ -3,6 +3,8 @@ using UnityEngine.UI;
 
 public class frogHealth : MonoBehaviour
 {
+    public Sprite heartOn;
+    public Sprite heartOff;
     // Array to hold the heart images
     public Image[] hearts; 
     public int maxHearts = 3;
@@ -34,11 +36,11 @@ public class frogHealth : MonoBehaviour
         {
             if (i < currentHearts)
             {
-                hearts[i].enabled = true;  // Show heart
+                hearts[i].sprite = heartOn;  // Heart is "enabled"
             }
             else
             {
-                hearts[i].enabled = false; // Hide heart
+                hearts[i].sprite = heartOff; // Heart is "disabled"
             }
         }
     }
