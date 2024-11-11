@@ -8,8 +8,9 @@ public class levelSpawnScript : MonoBehaviour
     // Randomization can be added by creating different levels and selecting a random one to spawn (levels should be 10 units in height)
     public GameObject[] levelTemplates;
     public GameObject[] obstaclePrefabs;
+    public GameObject[] platformPrefabs;
     public float[][] levelLanes;
-
+    public float[][] waterLanes;
 
     Vector3 lastPos; // Used to store previous spawn position
     Queue<GameObject> levels = new Queue<GameObject>(); // Queue to hold levels that are currently on screen
@@ -20,12 +21,17 @@ public class levelSpawnScript : MonoBehaviour
     {
         int randomLevel = Random.Range(0, levelTemplates.Length);
         levelLanes = new float[4][];
+        waterLanes = new float[4][];
 
         // Setting "lane" positions for levels
         levelLanes[0] = new float[] {2, 3, 4, 5};
+        waterLanes[0] = new float[] {7, 8, 9};
         levelLanes[1] = new float[] {3, 4, 6, 7, 8};
+        waterLanes[1] = new float[] {1};
         levelLanes[2] = new float[] {1, 7, 8, 9};
+        waterLanes[2] = new float[] {3, 4, 5};
         levelLanes[3] = new float[] {1, 2, 4, 5};
+        waterLanes[3] = new float[] {7, 8};
 
         // Initializing the starting area
         lastPos = spawnLevel(-25, randomLevel);
@@ -102,5 +108,25 @@ public class levelSpawnScript : MonoBehaviour
             float obstacleSpeed = 1f; // Place to adjust the speed later
             newObstacle.GetComponent<Obstacle>().SetMovementSpeed(obstacleSpeed);
         }
+        // Three logs for each lane
+        int numLogs = 4;
+        for (int i = 0; i < waterLanes[randomLevel].Length; i++)
+        {
+            float spawnLaneY = waterLanes[randomLevel][i];
+            
+            for (int j = 0; j < numLogs; j++) {
+                float spawnX = Random.Range(-5f, 5f);
+
+                Vector3 spawnPos = new Vector3(spawnX, yOffset + spawnLaneY, 0);
+                int logLength = Random.Range(0, platformPrefabs.Length);
+                GameObject platformPrefab = platformPrefabs[logLength];
+                GameObject newPlatform = Instantiate(platformPrefab, spawnPos, Quaternion.identity);
+                obstacles.Enqueue(newPlatform);
+
+                float platformSpeed = 1f; // Place to adjust the speed later
+                newPlatform.GetComponent<Obstacle>().SetMovementSpeed(platformSpeed);
+            }
+        }
+
     }
 }

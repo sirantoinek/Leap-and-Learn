@@ -10,6 +10,8 @@ public class frogMovement : MonoBehaviour
 
     public Sprite leapSprite;
 
+    public frogHealth froghealth;
+
     // Called before start
     public void Awake()
     {
@@ -20,7 +22,7 @@ public class frogMovement : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+
     }
     
 
@@ -44,6 +46,10 @@ public class frogMovement : MonoBehaviour
             Move(Vector3.up);
         }
 
+        // Obstacle
+
+
+
         // FROG IS NOT INTENDED TO MOVE BACKWARDS, THIS STATEMENT IS ONLY PRESENT FOR DEBUGGING AND SHOULD BE REMOVED BEFORE ADDING EQUATION MOVEMENT
         else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
         {
@@ -58,6 +64,24 @@ public class frogMovement : MonoBehaviour
     {
         Vector3 movePos = transform.position + direction;
 
+        Collider2D platform = Physics2D.OverlapBox(movePos, Vector2.zero, 0f, LayerMask.GetMask("Platform"));
+        Collider2D obstacle = Physics2D.OverlapBox(movePos, Vector2.zero, 0f, LayerMask.GetMask("Obstacle"));
+
+
+        if (platform != null)
+        {
+            transform.SetParent(platform.transform);
+        } 
+        else
+        {
+            transform.SetParent(null);
+        }
+        if (obstacle != null)
+        {
+            froghealth.LoseHeart();
+        }
+
+        
         // Prevents the player from moving off the edge of the screen
         if ((movePos.x >= -5) && (movePos.x <= 5))
         {

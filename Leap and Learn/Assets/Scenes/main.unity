@@ -1689,6 +1689,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   idleSprite: {fileID: 21300000, guid: accdfca821fcfad4aa0e79fe4138f7df, type: 3}
   leapSprite: {fileID: 21300000, guid: c032d92b984378d4ebe60f300734cb08, type: 3}
+  froghealth: {fileID: 0}
 --- !u!50 &1840563115
 Rigidbody2D:
   serializedVersion: 5
@@ -1944,6 +1945,10 @@ MonoBehaviour:
   - {fileID: 3408921600230551104, guid: 07640f54ab24ff94b8992aed27782a9d, type: 3}
   obstaclePrefabs:
   - {fileID: 5455146885966708473, guid: 31e8bc124f6923a4c9293b8301172628, type: 3}
+  platformPrefabs:
+  - {fileID: 2027251573002434436, guid: d127fb23711d35140a1b3a93dc1a3436, type: 3}
+  - {fileID: 7688425301598918554, guid: eece4ec06cba185418a4505d4d4ae728, type: 3}
+  - {fileID: 5444891794274056993, guid: 1b547e7c2f241e1419bf845e523d8ac9, type: 3}
 --- !u!4 &1915594668
 Transform:
   m_ObjectHideFlags: 0
