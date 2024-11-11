@@ -150,6 +150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inputAnswer: 
   currentQuestion: 
+  frogmovement: {fileID: 1840563114}
   questionManager: {fileID: 875076816}
   answerInputField: {fileID: 762096495}
   textDisplay: {fileID: 1317780116}
@@ -2565,6 +2566,7 @@ MonoBehaviour:
   answerInputField: {fileID: 762096495}
   textDisplay: {fileID: 1317780116}
   canMove: 0
+  hasMoved: 0
   currentQuestion: 
   idleSprite: {fileID: 21300000, guid: accdfca821fcfad4aa0e79fe4138f7df, type: 3}
   leapSprite: {fileID: 21300000, guid: c032d92b984378d4ebe60f300734cb08, type: 3}
