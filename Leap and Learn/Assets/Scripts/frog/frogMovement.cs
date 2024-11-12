@@ -18,16 +18,17 @@ public class frogMovement : MonoBehaviour
     public bool hasMoved;
     public string currentQuestion;
 
+    private frogHealth health;
 
     public Sprite idleSprite;
 
     public Sprite leapSprite;
 
-    public frogHealth froghealth;
-
     // Called before start
     public void Awake()
     {
+        health = GetComponent<frogHealth>();
+
         canMove = false;
         hasMoved = true;
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -112,7 +113,7 @@ public class frogMovement : MonoBehaviour
         }
         if (obstacle != null)
         {
-            froghealth.LoseHeart();
+            health.LoseHeart();
         }
 
         
