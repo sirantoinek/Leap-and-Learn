@@ -2,11 +2,9 @@ using UnityEngine;
 
 public class Obstacle : MonoBehaviour
 {
-
     public Vector2 direction = Vector2.right;
     public float speed = 1f;
     public int size = 1;
-    public Transform frog;
     private Vector3 leftEdge;
     private Vector3 rightEdge;
 
@@ -15,6 +13,10 @@ public class Obstacle : MonoBehaviour
         speed = newSpeed;
     }
 
+    public void SetSize(int newSize)
+    {
+        size = newSize;
+    }
 
     private void Start()
     {
