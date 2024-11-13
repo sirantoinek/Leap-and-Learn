@@ -9,7 +9,7 @@ public class frogMovement : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     public QuestionManager questionManager;
     public AnswerField answerField;
-    // variable for the user input box
+    // Variable for the user input box
     public TMP_InputField answerInputField;
     public TextMeshProUGUI textDisplay;
 
@@ -17,7 +17,7 @@ public class frogMovement : MonoBehaviour
     Queue<Queue<int>> dangerLanes;
     Queue<Queue<int>> respawnLanes;
 
-    // if the frog can move or not
+    // If the frog can move or not
     public bool canMove;
     public bool hasMoved;
     public string currentQuestion;
@@ -27,9 +27,6 @@ public class frogMovement : MonoBehaviour
     public Sprite idleSprite;
     public Sprite leapSprite;
 
-
-    public frogHealth froghealth;
-
     public int respawnLocation;
 
 
@@ -38,7 +35,7 @@ public class frogMovement : MonoBehaviour
     {
         health = GetComponent<frogHealth>();
         respawnLocation = -5;
-        canMove = false;
+        canMove = true;
         hasMoved = true;
 
         // Get the lane info
@@ -69,8 +66,8 @@ public class frogMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // hasMoved set to allow movement only after correct answer in AnswerField.cs    
-        if (hasMoved) {
+        // hasMoved set to allow movement only after correct answer in AnswerField.cs
+        if (!hasMoved && canMove) {
             if(Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
             {
                 transform.rotation = Quaternion.Euler(0f, 0f, 90f);
@@ -150,6 +147,7 @@ public class frogMovement : MonoBehaviour
 
     private IEnumerator LeapAnimation(Vector3 destination)
     {
+        lockMovement();
         Vector3 startPos = transform.position;
 
         float elapsed = 0f;
@@ -168,6 +166,7 @@ public class frogMovement : MonoBehaviour
         transform.position = destination;
 
         spriteRenderer.sprite = idleSprite;
+        unlockMovement();
     }
 
     public void unlockMovement() {
@@ -199,6 +198,7 @@ public class frogMovement : MonoBehaviour
         Debug.Log("Respawn");
         Vector3 spawnPoint = new Vector3(0, respawnLocation, 0);
         transform.position = spawnPoint;
+        canMove = true;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
