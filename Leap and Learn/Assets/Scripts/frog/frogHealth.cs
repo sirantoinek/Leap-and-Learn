@@ -9,6 +9,7 @@ public class frogHealth : MonoBehaviour
     public Image[] hearts; 
     public int maxHearts = 3;
     public int currentHearts;
+    public GameObject GameOverScreen;
 
     void Start()
     {
@@ -47,6 +48,6 @@ public class frogHealth : MonoBehaviour
 
     void GameOver()
     {
-        // Do whatever when gameover
+        GameOverScreen.SetActive(true);
     }
 }

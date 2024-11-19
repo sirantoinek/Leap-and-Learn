@@ -2756,7 +2756,6 @@ MonoBehaviour:
   currentQuestion: 
   idleSprite: {fileID: 21300000, guid: accdfca821fcfad4aa0e79fe4138f7df, type: 3}
   leapSprite: {fileID: 21300000, guid: c032d92b984378d4ebe60f300734cb08, type: 3}
-  froghealth: {fileID: 0}
   respawnLocation: 0
 --- !u!50 &1840563115
 Rigidbody2D:
@@ -2921,6 +2920,7 @@ MonoBehaviour:
   - {fileID: 2006983043}
   maxHearts: 3
   currentHearts: 3
+  GameOverScreen: {fileID: 1248366317}
 --- !u!1 &1861729408
 GameObject:
   m_ObjectHideFlags: 0

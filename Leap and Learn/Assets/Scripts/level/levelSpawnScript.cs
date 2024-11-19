@@ -119,7 +119,7 @@ public class levelSpawnScript : MonoBehaviour
         {
             float spawnLaneY = levelLanes[randomLevel][i];
             // You can mess around with the spawn range as much as you want. Numbers are just a place holder
-            int numObstacles = Random.Range(2, 3); // Randomize how many obstacles spawn on the lane
+            int numObstacles = Random.Range(1, 2); // Randomize how many obstacles spawn on the lane
             float obstacleSpeed = Random.Range(0.8f, 1.5f); ; // Place to adjust the speed later
 
             for (int j = 0; j < numObstacles; j++)
