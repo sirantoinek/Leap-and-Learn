@@ -2756,6 +2756,8 @@ MonoBehaviour:
   currentQuestion: 
   idleSprite: {fileID: 21300000, guid: accdfca821fcfad4aa0e79fe4138f7df, type: 3}
   leapSprite: {fileID: 21300000, guid: c032d92b984378d4ebe60f300734cb08, type: 3}
+  froghealth: {fileID: 0}
+  respawnLocation: 0
 --- !u!50 &1840563115
 Rigidbody2D:
   serializedVersion: 5
@@ -2872,7 +2874,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: accdfca821fcfad4aa0e79fe4138f7df, type: 3}
   m_Color: {r: 0.10578135, g: 0.6754716, b: 0.21092084, a: 1}
   m_FlipX: 0

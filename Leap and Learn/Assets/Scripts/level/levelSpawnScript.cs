@@ -11,10 +11,16 @@ public class levelSpawnScript : MonoBehaviour
     public GameObject[] platformPrefabs;
     public float[][] levelLanes;
     public float[][] waterLanes;
+    public float[][] safeLanes;
 
     Vector3 lastPos; // Used to store previous spawn position
     Queue<GameObject> levels = new Queue<GameObject>(); // Queue to hold levels that are currently on screen
     Queue<GameObject> obstacles = new Queue<GameObject>(); // Queue to hold obstacles that are currently loaded
+
+    // Y positions where the frog drowns
+    public Queue<Queue<int>> dangerLanes = new Queue<Queue<int>>();
+    // Y positions where the frog respawns
+    public Queue<Queue<int>> respawnLanes = new Queue<Queue<int>>();
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -22,16 +28,24 @@ public class levelSpawnScript : MonoBehaviour
         int randomLevel = Random.Range(0, levelTemplates.Length);
         levelLanes = new float[4][];
         waterLanes = new float[4][];
+        safeLanes = new float[4][];
 
         // Setting "lane" positions for levels
         levelLanes[0] = new float[] {2, 3, 4, 5};
         waterLanes[0] = new float[] {7, 8, 9};
+        safeLanes[0] = new float[] {0, 1, 6};
+
         levelLanes[1] = new float[] {3, 4, 6, 7, 8};
         waterLanes[1] = new float[] {1};
+        safeLanes[1] = new float[] {0, 2, 5, 9};
+
         levelLanes[2] = new float[] {1, 7, 8, 9};
         waterLanes[2] = new float[] {3, 4, 5};
+        safeLanes[2] = new float[] {0, 2, 6,};
+
         levelLanes[3] = new float[] {1, 2, 4, 5};
         waterLanes[3] = new float[] {7, 8};
+        safeLanes[3] = new float[] {7, 8, 9};
 
         // Initializing the starting area
         lastPos = spawnLevel(-25, randomLevel);
@@ -72,6 +86,7 @@ public class levelSpawnScript : MonoBehaviour
     {
         GameObject levelToDelete = levels.Dequeue();
         Destroy(levelToDelete);
+        dangerLanes.Dequeue();
     }
 
     // Dequeues and deletes obstacles that are out of the camera view
@@ -87,46 +102,89 @@ public class levelSpawnScript : MonoBehaviour
 
     void spawnObstacles(float yOffset, GameObject level, int randomLevel)
     {
-        // You can mess around with the spawn range as much as you want. Numbers just a place holder
-        int numObstacles = Random.Range(7, 10); // Randomize how many obstacles spawn on the level
-
-        for (int i = 0; i < numObstacles; i++)
+        // Set the safe positions
+        Queue<int> grassLanes = new Queue<int>();
+        for (int i = 0; i < safeLanes[randomLevel].Length; i++)
         {
-            // Can probably set the if statement here to choose the right level lanes.
-            // Randomly choose a lane from the obstacleLanes array
-            float spawnLaneY = levelLanes[randomLevel][Random.Range(0, levelLanes[randomLevel].Length)];
-
-            // Randomize spawn position within the lane (X-axis)
-            float spawnX = Random.Range(-5f, 5f);
-            Vector3 spawnPos = new Vector3(spawnX, yOffset + spawnLaneY, 0);
-
-            // Instantiate the obstacle at the spawn position
-            GameObject obstaclePrefab = obstaclePrefabs[Random.Range(0, obstaclePrefabs.Length)];
-            GameObject newObstacle = Instantiate(obstaclePrefab, spawnPos, Quaternion.identity);
-            obstacles.Enqueue(newObstacle);
-
-            float obstacleSpeed = 1f; // Place to adjust the speed later
-            newObstacle.GetComponent<Obstacle>().SetMovementSpeed(obstacleSpeed);
+            float respawnLaneY = safeLanes[randomLevel][i];
+            int respawnY = (int)(yOffset + respawnLaneY);
+            grassLanes.Enqueue(respawnY);
         }
-        // Three logs for each lane
-        int numLogs = 4;
-        for (int i = 0; i < waterLanes[randomLevel].Length; i++)
+        respawnLanes.Enqueue(grassLanes);
+
+
+
+        // For each lane
+        for (int i = 0; i < levelLanes[randomLevel].Length; i++)
         {
-            float spawnLaneY = waterLanes[randomLevel][i];
-            
-            for (int j = 0; j < numLogs; j++) {
-                float spawnX = Random.Range(-5f, 5f);
+            float spawnLaneY = levelLanes[randomLevel][i];
+            // You can mess around with the spawn range as much as you want. Numbers are just a place holder
+            int numObstacles = Random.Range(2, 3); // Randomize how many obstacles spawn on the lane
+            float obstacleSpeed = Random.Range(0.8f, 1.5f); ; // Place to adjust the speed later
 
-                Vector3 spawnPos = new Vector3(spawnX, yOffset + spawnLaneY, 0);
-                int logLength = Random.Range(0, platformPrefabs.Length);
-                GameObject platformPrefab = platformPrefabs[logLength];
-                GameObject newPlatform = Instantiate(platformPrefab, spawnPos, Quaternion.identity);
-                obstacles.Enqueue(newPlatform);
+            for (int j = 0; j < numObstacles; j++)
+            {
+                // Randomize spawn position within the lane (X-axis)
+                float spawnX = -5f;
+                float xOffset = Random.Range(5f, 7f);
+                Vector3 spawnPos = new Vector3(spawnX + (xOffset * j), yOffset + spawnLaneY, 0);
 
-                float platformSpeed = 1f; // Place to adjust the speed later
-                newPlatform.GetComponent<Obstacle>().SetMovementSpeed(platformSpeed);
+                // Instantiate the obstacle at the spawn position
+                GameObject obstaclePrefab = obstaclePrefabs[Random.Range(0, obstaclePrefabs.Length)];
+                GameObject newObstacle = Instantiate(obstaclePrefab, spawnPos, Quaternion.identity);
+                obstacles.Enqueue(newObstacle);
+                newObstacle.GetComponent<Obstacle>().SetMovementSpeed(obstacleSpeed);
             }
         }
 
+        // Places where the frog drowns
+        Queue<int> riverLanes = new Queue<int>();
+
+        for (int i = 0; i < waterLanes[randomLevel].Length; i++)
+        {
+            // Set water lanes to check for drowning later
+            float spawnLaneY = waterLanes[randomLevel][i];
+            int waterLaneY = (int)(yOffset + spawnLaneY);
+            riverLanes.Enqueue(waterLaneY);
+ 
+            int logLength = Random.Range(0, platformPrefabs.Length);
+            // The number of logs is different depending on length
+            int numLogs;
+            int logSize;
+            float logOffset;
+            GameObject platformPrefab = platformPrefabs[logLength];
+            if (logLength == 0)
+            {
+                numLogs = 3;
+                logSize = 7;
+                logOffset = 11f;
+            }
+            else if (logLength == 1)
+            {
+                numLogs = 3;
+                logSize = 5;
+                logOffset = 7.5f;
+            }
+            else
+            {
+                numLogs = 4;
+                logSize = 3;
+                logOffset = 5f;
+            }
+
+            float platformSpeed = Random.Range(1f, 2f); // Place to adjust the speed later
+            for (int j = 0; j < numLogs; j++) {
+                float spawnX = -5f;
+                Vector3 spawnPos = new Vector3(spawnX + (logOffset * j), yOffset + spawnLaneY, 0);
+
+                GameObject newPlatform = Instantiate(platformPrefab, spawnPos, Quaternion.identity);
+                newPlatform.GetComponent<Obstacle>().SetSize(logSize);
+                obstacles.Enqueue(newPlatform);
+
+                newPlatform.GetComponent<Obstacle>().SetMovementSpeed(platformSpeed);
+            }
+        }
+        dangerLanes.Enqueue(riverLanes);
     }
 }
+

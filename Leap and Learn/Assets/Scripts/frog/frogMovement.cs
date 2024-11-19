@@ -1,19 +1,23 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
 public class frogMovement : MonoBehaviour
 {
-
     private SpriteRenderer spriteRenderer;
     public QuestionManager questionManager;
     public AnswerField answerField;
-    // varibale for the user input box
+    // Variable for the user input box
     public TMP_InputField answerInputField;
     public TextMeshProUGUI textDisplay;
-    
-    // if the frog can move or not
+
+    // Locations for the frog to interact with
+    Queue<Queue<int>> dangerLanes;
+    Queue<Queue<int>> respawnLanes;
+
+    // If the frog can move or not
     public bool canMove;
     public bool hasMoved;
     public string currentQuestion;
@@ -21,16 +25,25 @@ public class frogMovement : MonoBehaviour
     private frogHealth health;
 
     public Sprite idleSprite;
-
     public Sprite leapSprite;
+
+    public int respawnLocation;
+
 
     // Called before start
     public void Awake()
     {
         health = GetComponent<frogHealth>();
-
-        canMove = false;
+        respawnLocation = -5;
+        canMove = true;
         hasMoved = true;
+
+        // Get the lane info
+        GameObject levelSpawner = GameObject.Find("levelSpawner");
+        levelSpawnScript levelScript = levelSpawner.GetComponent<levelSpawnScript>();
+        dangerLanes = levelScript.dangerLanes;
+        respawnLanes = levelScript.respawnLanes;
+
         spriteRenderer = GetComponent<SpriteRenderer>();
         textDisplay = GameObject.Find("AnswerTextUI").GetComponent<TextMeshProUGUI>();
         // finds the specific UI TextInput which allows us to actually use the input box in relation to movement
@@ -53,8 +66,8 @@ public class frogMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // hasMoved set to allow movement only after correct answer in AnswerField.cs    
-        if (!hasMoved) {
+        // hasMoved set to allow movement only after correct answer in AnswerField.cs
+        if (!hasMoved && canMove) {
             if(Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
             {
                 transform.rotation = Quaternion.Euler(0f, 0f, 90f);
@@ -99,33 +112,42 @@ public class frogMovement : MonoBehaviour
     {
         Vector3 movePos = transform.position + direction;
 
-        Collider2D platform = Physics2D.OverlapBox(movePos, Vector2.zero, 0f, LayerMask.GetMask("Platform"));
-        Collider2D obstacle = Physics2D.OverlapBox(movePos, Vector2.zero, 0f, LayerMask.GetMask("Obstacle"));
-
-
-        if (platform != null)
-        {
-            transform.SetParent(platform.transform);
-        } 
-        else
-        {
-            transform.SetParent(null);
-        }
-        if (obstacle != null)
-        {
-            health.LoseHeart();
-        }
-
-        
-        // Prevents the player from moving off the edge of the screen
         if ((movePos.x >= -5) && (movePos.x <= 5))
         {
             StartCoroutine(LeapAnimation(movePos));
         }
+
+        Collider2D platform = Physics2D.OverlapBox(movePos, Vector2.zero, 0f, LayerMask.GetMask("Platform"));
+        Collider2D obstacle = Physics2D.OverlapBox(movePos, Vector2.zero, 0f, LayerMask.GetMask("Obstacle"));
+
+        if (platform != null)
+        {
+            transform.SetParent(platform.transform);
+        }
+        else
+        {
+            transform.SetParent(null);
+        }
+
+        // Check if drowning
+        if (transform.parent == null && checkIfLane((int)movePos.y, dangerLanes))
+        {
+            health.LoseHeart();
+            respawn();
+        }
+        // Check if safe
+        if (checkIfLane((int)movePos.y, respawnLanes))
+        {
+            respawnLocation = (int)movePos.y;
+            Debug.Log("New Respawn Point");
+            Debug.Log(respawnLocation);
+        }
+
     }
 
     private IEnumerator LeapAnimation(Vector3 destination)
     {
+        lockMovement();
         Vector3 startPos = transform.position;
 
         float elapsed = 0f;
@@ -144,6 +166,7 @@ public class frogMovement : MonoBehaviour
         transform.position = destination;
 
         spriteRenderer.sprite = idleSprite;
+        unlockMovement();
     }
 
     public void unlockMovement() {
@@ -152,5 +175,37 @@ public class frogMovement : MonoBehaviour
 
     public void lockMovement() {
         canMove = false;
+    }
+
+    private bool checkIfLane(int location, Queue<Queue<int>> lanes)
+    {
+        foreach (Queue<int> innerQueue in lanes)
+        {
+            foreach (int lane in innerQueue)
+            {
+                if (lane == location)
+                {
+                    return true; 
+                }
+            }
+        }
+        return false;
+    }
+
+    private void respawn()
+    {
+        StopAllCoroutines();
+        Debug.Log("Respawn");
+        Vector3 spawnPoint = new Vector3(0, respawnLocation, 0);
+        transform.position = spawnPoint;
+        canMove = true;
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.layer == LayerMask.NameToLayer("Obstacle")) {
+            health.LoseHeart();
+            respawn();
+        }
     }
 }
