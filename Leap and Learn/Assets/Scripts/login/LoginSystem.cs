@@ -4,6 +4,11 @@ using UnityEngine;
 
 public class LoginSystem : MonoBehaviour
 {
+    private string userEmail;
+    private string userPassword;
+    private string username;
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -11,14 +16,29 @@ public class LoginSystem : MonoBehaviour
         {
             PlayFabSettings.TitleId = "119EB";
         }
-        var request = new LoginWithCustomIDRequest { CustomId = "GettingStartedGuide", CreateAccount = true };
-        PlayFabClientAPI.LoginWithCustomID(request, OnLoginSuccess, OnLoginFailure);
+
+        if (PlayerPrefs.HasKey("EMAIL"))
+        {
+            userEmail = PlayerPrefs.GetString("EMAIL");
+            userPassword = PlayerPrefs.GetString("PASSWORD");
+            var request = new LoginWithEmailAddressRequest { Email = userEmail, Password = userPassword };
+            PlayFabClientAPI.LoginWithEmailAddress(request, OnLoginSuccess, OnLoginFailure);
+        }
+
     }
 
+    public void OnClickLogin()
+    {
+        var request = new LoginWithEmailAddressRequest { Email = userEmail, Password = userPassword };
+        PlayFabClientAPI.LoginWithEmailAddress(request, OnLoginSuccess, OnLoginFailure);
+        Debug.Log("Complete");
+    }
 
     private void OnLoginSuccess(LoginResult result)
     {
         Debug.Log("Congratulations, you made your first successful API call!");
+        PlayerPrefs.SetString("EMAIL", userEmail);
+        PlayerPrefs.SetString("PASSWORD", userPassword);
     }
     private void OnLoginFailure(PlayFabError error)
     {
@@ -28,10 +48,14 @@ public class LoginSystem : MonoBehaviour
     }
 
 
-
-    // Update is called once per frame
-    void Update()
+    public void GetUserEmail(string email)
     {
-        
+        userEmail = email;
     }
+
+    public void GetUserPassord(string pass)
+    {
+        userPassword = pass;
+    }
+
 }
