@@ -1,6 +1,7 @@
 using PlayFab.ClientModels;
 using PlayFab;
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 using System;
 using System.Linq;
@@ -15,6 +16,7 @@ public class PlayFabController : MonoBehaviour
 
     void Awake()
     {
+        Debug.Log("awake test");
         if (string.IsNullOrEmpty(PlayFabSettings.TitleId))
         {
             PlayFabSettings.TitleId = "119EB";
@@ -22,11 +24,13 @@ public class PlayFabController : MonoBehaviour
 
         if (Instance != null && Instance != this)
         {
+            Debug.Log("AWAKE DELETE");
             Destroy(this);
         }
         else
         {
             Instance = this;
+            DontDestroyOnLoad(Instance);
         }
     }
 
@@ -83,6 +87,7 @@ public class PlayFabController : MonoBehaviour
 
     public void Logout()
     {
+        Debug.Log("LOGOUT REACHED");
         if (playFabID != null)
         {
             PlayFabClientAPI.ForgetAllCredentials();
@@ -110,7 +115,7 @@ public class PlayFabController : MonoBehaviour
     }
 
     #region HighScore
-    private int highScore = 0;
+    public int highScore = 0;
 
     private void PullHighScore()
     {
@@ -127,10 +132,7 @@ public class PlayFabController : MonoBehaviour
 
     public int GetHighScore()
     {
-        if (highScore < 0)
-        {
-            PullHighScore();
-        }
+        PullHighScore();
         return highScore;
     }
 
@@ -160,16 +162,16 @@ public class PlayFabController : MonoBehaviour
     #endregion HighScore
 
     #region LeaderBoard
-    private List<PlayerLeaderboardEntry> leaderboardEntries = new();
+    public List<PlayerLeaderboardEntry> leaderboardEntries = new List<PlayerLeaderboardEntry>();
 
     public List<PlayerLeaderboardEntry> GetLeaderboardEntries()
     {
-        GetTop10Leaderboard();
-        GetAroundPlayerLeaderboard();
+        GetTop10Leaderboard(); // Initiates the API call
+        GetAroundPlayerLeaderboard(); // Initiates another API call
 
         return leaderboardEntries;
-
     }
+
     private void GetTop10Leaderboard()
     {
         var request = new GetLeaderboardRequest
@@ -193,7 +195,19 @@ public class PlayFabController : MonoBehaviour
 
     private void OnTop10LeaderboardGet(GetLeaderboardResult result)
     {
-        leaderboardEntries = result.Leaderboard;
+        if (result.Leaderboard != null && result.Leaderboard.Count > 0)
+        {
+            Debug.Log($"Leaderboard successfully fetched. Top {result.Leaderboard.Count} players:");
+            foreach (var entry in result.Leaderboard)
+            {
+                Debug.Log($"Player: {entry.DisplayName}, Score: {entry.StatValue}");
+            }
+            leaderboardEntries = result.Leaderboard;
+        }
+        else
+        {
+            Debug.LogWarning("Leaderboard fetched, but no entries found.");
+        }
     }
 
     // Currently not operational

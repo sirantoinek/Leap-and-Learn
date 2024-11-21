@@ -1,5 +1,6 @@
 using PlayFab;
 using PlayFab.ClientModels;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -9,6 +10,22 @@ public class LoginManager : MonoBehaviour
     public TMP_InputField passwordTextBox;
     public TextMeshProUGUI loginErrorTextBox;
     public GameObject LoginPanel;
+
+    public TextMeshProUGUI AccountInfoUsername;
+    public TextMeshProUGUI AccountInfoHighScore;
+    public TextMeshProUGUI AccountInfoCoinCount;
+    public TextMeshProUGUI UILeaderboard;
+
+    private void Start()
+    {
+        if (PlayFabController.Instance.GetPlayFabID() != null)
+        {
+            LoginPanel.SetActive(false);
+            PopulateAccountInfo();
+            PopulateUILeaderboard();
+        }
+        else LoginPanel.SetActive(true);
+    }
 
     public void LoginUser()
     {
@@ -30,6 +47,51 @@ public class LoginManager : MonoBehaviour
         PlayFabClientAPI.LoginWithPlayFab(request, OnLoginSuccess, OnLoginFailure);
     }
 
+    private void PopulateAccountInfo() // populate the account info page
+    {
+        Invoke("PopulateAccountInfoHelper", 2.0f); // Delay in seconds before PopulateAccountInfoHelper is called (to give API time to respond)
+    }
+
+    private void PopulateAccountInfoHelper() // populate the account info page
+    {
+        AccountInfoUsername.text = ("Username: " + PlayFabController.Instance.GetUsername());
+        AccountInfoHighScore.text = ("Highscore: " + PlayFabController.Instance.GetHighScore());
+        AccountInfoCoinCount.text = ("Coins: " + PlayFabController.Instance.GetCoins());
+    }
+
+    private void PopulateUILeaderboard()
+    {
+        // Populate leaderboard entries
+        PlayFabController.Instance.GetLeaderboardEntries();
+
+        Invoke("PopulateUILeaderboardHelper", 2.0f); // Delay in seconds before PopulateUILeaderboardHelper is called (to give API time to respond)
+    }
+
+    private void PopulateUILeaderboardHelper()
+    {
+        // Check if entries are fetched (if empty, we can wait for the data to arrive)
+        if (PlayFabController.Instance.leaderboardEntries == null || PlayFabController.Instance.leaderboardEntries.Count == 0)
+        {
+            UILeaderboard.text = ("No leaderboard entries available.");
+            return;
+        }
+
+        UILeaderboard.text = ""; // Clearing Leaderboard
+
+        // Iterate through the leaderboard entries and update the UI
+        foreach (var item in PlayFabController.Instance.leaderboardEntries)
+        {
+            UILeaderboard.text += string.Format("{0}. {1,-15} {2,-6}\n",
+                item.Position + 1, item.DisplayName, item.StatValue);
+        }
+    }
+
+
+public void LogoutButton()
+    {
+        PlayFabController.Instance.Logout();
+    }
+
     private void OnLoginSuccess(LoginResult result)
     {
         Debug.Log($"Login successful! PlayFab ID: {result.PlayFabId}");
@@ -37,6 +99,9 @@ public class LoginManager : MonoBehaviour
         PlayFabController.Instance.SetUsername(userNameTextBox.text);
         PlayFabController.Instance.SetPlayFabID(result.PlayFabId);
         PlayFabController.Instance.OnLogin();
+
+        PopulateAccountInfo();
+        PopulateUILeaderboard();
 
         LoginPanel.SetActive(false);    // hides the panel when login success.
     }
