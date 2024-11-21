@@ -21,8 +21,6 @@ public class change_score : MonoBehaviour
         score = 0;
         scoreValueTextBox.text = score.ToString();
         highestYpos = frog.position.y - 0.1f;
-
-        StartCoroutine(UpdateLeaderboardCoroutine());
     }
 
     void Update()
@@ -45,23 +43,15 @@ public class change_score : MonoBehaviour
     void increaseScore(int tilesJumped)
     {
         score += tilesJumped;
+        if (score > PlayFabController.Instance.GetHighScore())
+        {
+            PlayFabController.Instance.UpdateHighScore(score);
+        }
     }
 
     // Update the score in the textbox
     void updateScoreTextBox()
     {
         scoreValueTextBox.text = score.ToString();
-    }
-
-    private IEnumerator UpdateLeaderboardCoroutine()
-    {
-        while (true)
-        {
-            if (score > PlayFabController.Instance.GetHighScore())
-            {
-                PlayFabController.Instance.UpdateHighScore(score);
-            }
-            yield return new WaitForSeconds(2); // push score every 2 sec if greater
-        }
     }
 }
