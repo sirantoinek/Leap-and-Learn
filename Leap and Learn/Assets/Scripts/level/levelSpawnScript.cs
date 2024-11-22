@@ -1,22 +1,29 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
+using Random = UnityEngine.Random;
+using System.Diagnostics;
 
 public class levelSpawnScript : MonoBehaviour
 {
-
     public Transform frog;
     // Randomization can be added by creating different levels and selecting a random one to spawn (levels should be 10 units in height)
     public GameObject[] levelTemplates;
     public GameObject[] obstaclePrefabs;
     public GameObject[] platformPrefabs;
+    public GameObject[] powerupPrefabs;
+    public GameObject coinPrefab;
     public float[][] levelLanes;
     public float[][] waterLanes;
     public float[][] safeLanes;
 
+    public float speedIncreaseRate;
+    public int score;
     Vector3 lastPos; // Used to store previous spawn position
     Queue<GameObject> levels = new Queue<GameObject>(); // Queue to hold levels that are currently on screen
     Queue<GameObject> obstacles = new Queue<GameObject>(); // Queue to hold obstacles that are currently loaded
-
+    public HashSet<GameObject> powerupSet = new HashSet<GameObject>(); // Hashset to hold powerups and coins that are currently loaded
+    
     // Y positions where the frog drowns
     public Queue<Queue<int>> dangerLanes = new Queue<Queue<int>>();
     // Y positions where the frog respawns
@@ -30,6 +37,12 @@ public class levelSpawnScript : MonoBehaviour
         waterLanes = new float[4][];
         safeLanes = new float[4][];
 
+        // Each point is worth 0.02f
+        speedIncreaseRate = 0.02f;
+        GameObject scoreValue = GameObject.Find("Score_Value");
+        change_score scoreScript = scoreValue.GetComponent<change_score>();
+        score = scoreScript.score;
+
         // Setting "lane" positions for levels
         levelLanes[0] = new float[] {2, 3, 4, 5};
         waterLanes[0] = new float[] {7, 8, 9};
@@ -41,11 +54,11 @@ public class levelSpawnScript : MonoBehaviour
 
         levelLanes[2] = new float[] {1, 7, 8, 9};
         waterLanes[2] = new float[] {3, 4, 5};
-        safeLanes[2] = new float[] {0, 2, 6,};
+        safeLanes[2] = new float[] {0, 2, 6};
 
         levelLanes[3] = new float[] {1, 2, 4, 5};
         waterLanes[3] = new float[] {7, 8};
-        safeLanes[3] = new float[] {7, 8, 9};
+        safeLanes[3] = new float[] {0, 3, 6, 9};
 
         // Initializing the starting area
         lastPos = spawnLevel(-25, randomLevel);
@@ -98,6 +111,20 @@ public class levelSpawnScript : MonoBehaviour
             GameObject obstacleToDelete = obstacles.Dequeue();
             Destroy(obstacleToDelete);
         }
+        
+        List<GameObject> coinsToRemove = new List<GameObject>();
+        foreach (GameObject obj in powerupSet)
+        {
+            if (obj.transform.position.y <= (frog.position.y - 2))
+            {
+                coinsToRemove.Add(obj);
+            }
+        }
+        foreach (GameObject obj in coinsToRemove)
+        {
+            powerupSet.Remove(obj);
+            Destroy(obj);
+        }
     }
 
     void spawnObstacles(float yOffset, GameObject level, int randomLevel)
@@ -112,15 +139,15 @@ public class levelSpawnScript : MonoBehaviour
         }
         respawnLanes.Enqueue(grassLanes);
 
-
-
         // For each lane
         for (int i = 0; i < levelLanes[randomLevel].Length; i++)
         {
             float spawnLaneY = levelLanes[randomLevel][i];
             // You can mess around with the spawn range as much as you want. Numbers are just a place holder
             int numObstacles = Random.Range(1, 2); // Randomize how many obstacles spawn on the lane
-            float obstacleSpeed = Random.Range(0.8f, 1.5f); ; // Place to adjust the speed later
+            // Base speed 
+            float baseSpeed = Random.Range(0.5f, 1.0f);
+            float obstacleSpeed = Mathf.Min(baseSpeed + (score * speedIncreaseRate), 2.0f);
 
             for (int j = 0; j < numObstacles; j++)
             {
@@ -185,6 +212,29 @@ public class levelSpawnScript : MonoBehaviour
             }
         }
         dangerLanes.Enqueue(riverLanes);
+
+        int numCoins = Random.Range(2, 5);
+        for (int i = 0; i < numCoins; i++)
+        {
+            float spawnX = Random.Range(-4, 4);
+            float spawnY = Random.Range(-4, 4);
+
+            Vector3 spawnPos = new Vector3(spawnX, spawnY + yOffset, 0);
+            GameObject newCoin = Instantiate(coinPrefab, spawnPos, Quaternion.identity);
+            powerupSet.Add(newCoin);
+        }
+
+        int numPowerup = Random.Range(0, 2);
+        for (int i = 0; i < numPowerup; i++)
+        {
+            float spawnX = Random.Range(-4, 4);
+            float spawnY = Random.Range(-4, 4);
+
+            Vector3 spawnPos = new Vector3(spawnX, spawnY + yOffset, 0);
+            GameObject powerupPrefab = powerupPrefabs[Random.Range(0, powerupPrefabs.Length)];
+            GameObject newPowerup = Instantiate(powerupPrefab, spawnPos, Quaternion.identity);
+            powerupSet.Add(newPowerup);
+        }
     }
 }
 

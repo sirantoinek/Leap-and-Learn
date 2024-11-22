@@ -10,10 +10,13 @@ public class frogHealth : MonoBehaviour
     public int maxHearts = 3;
     public int currentHearts;
     public GameObject GameOverScreen;
+    private frogMovement movement;
+    
 
     void Start()
     {
         currentHearts = maxHearts;
+        movement = GetComponent<frogMovement>();
         UpdateHeartsUI();
     }
 
@@ -30,6 +33,16 @@ public class frogHealth : MonoBehaviour
             GameOver();
         }
     }
+
+    public void GainHeart()
+    {
+        if (currentHearts < 3)
+        {
+            currentHearts++;
+            UpdateHeartsUI();
+        }
+    }
+
 
     void UpdateHeartsUI()
     {
@@ -49,5 +62,6 @@ public class frogHealth : MonoBehaviour
     void GameOver()
     {
         GameOverScreen.SetActive(true);
+        movement.lockMovement();
     }
 }
