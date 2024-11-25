@@ -11,8 +11,26 @@ public class ToggleScript : MonoBehaviour
         // Listen to the toggles for changes
         for(int i = 0; i < toggles.Length; i++)
         {
+            //loads persistant data
+            int isToggleOn = PlayerPrefs.GetInt($"Toggle{i}", 0);
+            if(isToggleOn == 1) {
+                toggles[i].isOn = true;
+            }
+            else {
+                toggles[i].isOn = false;
+            }
+
+            //checks state of toggle
+            if(toggles[i].isOn) {
+                isToggleOn = 1;
+            }
             int lastToggle = i;
-            toggles[i].onValueChanged.AddListener(delegate{EnsureAtLeastOneToggleOn(lastToggle);});
+            toggles[i].onValueChanged.AddListener(delegate
+            {
+                EnsureAtLeastOneToggleOn(lastToggle);
+                //save the sate for when toggle changes
+                SaveToggleState(lastToggle);
+            });
         }
     }
 
@@ -29,5 +47,16 @@ public class ToggleScript : MonoBehaviour
             }
         }
         if (allOff) toggles[lastToggle].isOn = true;
+    }
+
+    //saves the toggle's state to player refs for persistant data
+    void SaveToggleState(int toggleIndex) {
+        if (toggles[toggleIndex].isOn) {
+            PlayerPrefs.SetInt($"Toggle{toggleIndex}", 1);
+        }
+        else {
+            PlayerPrefs.SetInt($"Toggle{toggleIndex}", 0);
+        }
+        PlayerPrefs.Save();
     }
 }
