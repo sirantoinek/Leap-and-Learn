@@ -2090,6 +2090,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61c08955e88ebcb4880bb1739bcef570, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  highScore: 0
   leaderboardEntries: []
 --- !u!4 &682312041
 Transform:

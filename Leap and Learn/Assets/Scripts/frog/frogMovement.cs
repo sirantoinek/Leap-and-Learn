@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Diagnostics;
 
 public class frogMovement : MonoBehaviour
 {
@@ -16,10 +17,13 @@ public class frogMovement : MonoBehaviour
     // Locations for the frog to interact with
     Queue<Queue<int>> dangerLanes;
     Queue<Queue<int>> respawnLanes;
+    HashSet<GameObject> powerupSet;
+    private Coroutine powerUpCoroutine;
 
     // If the frog can move or not
     public bool canMove;
     public bool hasMoved;
+    public bool movePowerup;
     public string currentQuestion;
 
     private frogHealth health;
@@ -37,12 +41,15 @@ public class frogMovement : MonoBehaviour
         respawnLocation = -5;
         canMove = true;
         hasMoved = true;
+        movePowerup = false;
+        powerUpCoroutine = null;
 
         // Get the lane info
         GameObject levelSpawner = GameObject.Find("levelSpawner");
         levelSpawnScript levelScript = levelSpawner.GetComponent<levelSpawnScript>();
         dangerLanes = levelScript.dangerLanes;
         respawnLanes = levelScript.respawnLanes;
+        powerupSet = levelScript.powerupSet;
 
         spriteRenderer = GetComponent<SpriteRenderer>();
         textDisplay = GameObject.Find("AnswerTextUI").GetComponent<TextMeshProUGUI>();
@@ -50,7 +57,7 @@ public class frogMovement : MonoBehaviour
         answerInputField = GameObject.Find("AnswerInputField").GetComponent<TMP_InputField>();
         // for debug purposes
         if (answerInputField == null) {
-            Debug.LogError("AnswerInputField not found in scene...");
+            UnityEngine.Debug.LogError("AnswerInputField not found in scene...");
         }
     }
 
@@ -67,7 +74,7 @@ public class frogMovement : MonoBehaviour
     void Update()
     {
         // hasMoved set to allow movement only after correct answer in AnswerField.cs
-        if (!hasMoved && canMove) {
+        if (!hasMoved && canMove || movePowerup && canMove) {
             if(Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
             {
                 transform.rotation = Quaternion.Euler(0f, 0f, 90f);
@@ -139,8 +146,8 @@ public class frogMovement : MonoBehaviour
         if (checkIfLane((int)movePos.y, respawnLanes))
         {
             respawnLocation = (int)movePos.y;
-            Debug.Log("New Respawn Point");
-            Debug.Log(respawnLocation);
+            UnityEngine.Debug.Log("New Respawn Point");
+            UnityEngine.Debug.Log(respawnLocation);
         }
 
     }
@@ -192,13 +199,29 @@ public class frogMovement : MonoBehaviour
         return false;
     }
 
+    private IEnumerator ActivatePowerUpCoroutine()
+    {
+        movePowerup = true;
+        UnityEngine.Debug.Log("Powerup On");
+        // Wait for 3 seconds
+        yield return new WaitForSeconds(3f);
+        UnityEngine.Debug.Log("Powerup Off");
+        movePowerup = false;
+    }
+
+
     private void respawn()
     {
         StopAllCoroutines();
-        Debug.Log("Respawn");
+        movePowerup = false;
+        UnityEngine.Debug.Log("Respawn");
         Vector3 spawnPoint = new Vector3(0, respawnLocation, 0);
         transform.position = spawnPoint;
         canMove = true;
+        if (health.currentHearts == 0)
+        {
+            lockMovement();
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -206,6 +229,33 @@ public class frogMovement : MonoBehaviour
         if (other.gameObject.layer == LayerMask.NameToLayer("Obstacle")) {
             health.LoseHeart();
             respawn();
+        }
+
+        else if (other.gameObject.layer == LayerMask.NameToLayer("Coin"))
+        {
+            int coins = PlayFabController.Instance.GetCoins();
+            coins += 1;
+            PlayFabController.Instance.SetCoins(coins);
+            powerupSet.Remove(other.gameObject);
+            Destroy(other.gameObject);
+        }
+
+        else if (other.gameObject.layer == LayerMask.NameToLayer("Health"))
+        {
+            health.GainHeart();
+            powerupSet.Remove(other.gameObject);
+            Destroy(other.gameObject);
+        }
+
+        else if (other.gameObject.layer == LayerMask.NameToLayer("Jump"))
+        {
+            if (powerUpCoroutine != null)
+            {
+                StopCoroutine(powerUpCoroutine);
+            }
+            powerUpCoroutine = StartCoroutine(ActivatePowerUpCoroutine());
+            powerupSet.Remove(other.gameObject);
+            Destroy(other.gameObject);
         }
     }
 }

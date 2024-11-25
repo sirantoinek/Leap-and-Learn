@@ -12,7 +12,7 @@ public class LeaderboardManager : MonoBehaviour
 
     private void Start()
     {
-        StartCoroutine(GetLeaderboardCoroutine());
+        // StartCoroutine(GetLeaderboardCoroutine());
     }
 
     private IEnumerator GetLeaderboardCoroutine()
