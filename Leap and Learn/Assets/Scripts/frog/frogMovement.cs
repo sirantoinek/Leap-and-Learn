@@ -30,6 +30,7 @@ public class frogMovement : MonoBehaviour
 
     public Sprite idleSprite;
     public Sprite leapSprite;
+    public string currentSkin;
 
     public int respawnLocation;
 
@@ -52,6 +53,34 @@ public class frogMovement : MonoBehaviour
         powerupSet = levelScript.powerupSet;
 
         spriteRenderer = GetComponent<SpriteRenderer>();
+        if (PlayFabController.Instance != null) {
+            //sets the color of the frog, depending on what the current skin on the account is 
+            currentSkin = PlayFabController.Instance.GetCurrentSkin();
+        }
+        else {
+            currentSkin = "Red";
+        }
+        
+        UnityEngine.Debug.LogError(currentSkin);
+        //sets the color of the frog, depending on what the current skin on the account is
+        if (currentSkin == "Green") {
+            spriteRenderer.color = Color.green;
+            UnityEngine.Debug.LogError("Should be set to green");
+        }
+        else if (currentSkin == "Red") {
+            spriteRenderer.color = Color.red;
+            UnityEngine.Debug.LogError("Should be set to red");
+        }
+        else if (currentSkin == "Black") {
+            //It's blue because when you do blue ont he oclor wheel the frog turns black
+            spriteRenderer.color = Color.blue;
+            UnityEngine.Debug.LogError("Should be set to black");
+        }
+        else if (currentSkin == "Yellow") {
+            spriteRenderer.color = Color.yellow;
+            UnityEngine.Debug.LogError("Should be set to yellow");
+        }
+
         textDisplay = GameObject.Find("AnswerTextUI").GetComponent<TextMeshProUGUI>();
         // finds the specific UI TextInput which allows us to actually use the input box in relation to movement
         answerInputField = GameObject.Find("AnswerInputField").GetComponent<TMP_InputField>();

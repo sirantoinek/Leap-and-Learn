@@ -242,6 +242,8 @@ public class PlayFabController : MonoBehaviour
     private int coins;
     private Dictionary<string, bool> hats;
     private Dictionary<string, bool> skins;
+    private string currentSkin = "Green";
+    private string currentHat;
 
     public int GetCoins()
     {
@@ -274,6 +276,18 @@ public class PlayFabController : MonoBehaviour
     public void SetSkins(Dictionary<string, bool> tempSkins)
     {
         SetSkinsData(tempSkins);
+    }
+    public void SetCurrentSkin(string newCurrentSkin) {
+        currentSkin = newCurrentSkin;
+    }
+    public string GetCurrentSkin() {
+        return currentSkin;
+    }
+    public void SetCurrentHat(string newCurrentHat) {
+        currentHat = newCurrentHat;
+    }
+    public string GetCurrentHat() {
+        return currentHat;
     }
 
 
