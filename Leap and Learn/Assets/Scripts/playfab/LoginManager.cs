@@ -1,6 +1,7 @@
 using PlayFab;
 using PlayFab.ClientModels;
 using System.Collections.Generic;
+using System;
 using TMPro;
 using UnityEngine;
 
@@ -49,22 +50,32 @@ public class LoginManager : MonoBehaviour
 
     private void PopulateAccountInfo() // populate the account info page
     {
-        Invoke("PopulateAccountInfoHelper", 2.0f); // Delay in seconds before PopulateAccountInfoHelper is called (to give API time to respond)
+        //Invoke("PopulateAccountInfoHelper", 2.0f); // Delay in seconds before PopulateAccountInfoHelper is called (to give API time to respond)
+        PopulateAccountInfoHelper();
+
     }
 
     private void PopulateAccountInfoHelper() // populate the account info page
     {
         AccountInfoUsername.text = ("Username: " + PlayFabController.Instance.GetUsername());
-        AccountInfoHighScore.text = ("Highscore: " + PlayFabController.Instance.GetHighScore());
-        AccountInfoCoinCount.text = ("Coins: " + PlayFabController.Instance.GetCoins());
+        PlayFabController.Instance.PullHighScore((tempHighScore) =>
+        {
+            AccountInfoHighScore.text = ("Highscore: " + tempHighScore);
+        });
+        PlayFabController.Instance.GetPlayerCoinData((tempCoins) =>
+        {
+            AccountInfoCoinCount.text = ("Coins: " + tempCoins);
+        });
+
     }
 
     private void PopulateUILeaderboard()
     {
         // Populate leaderboard entries
-        PlayFabController.Instance.GetLeaderboardEntries();
-
-        Invoke("PopulateUILeaderboardHelper", 2.0f); // Delay in seconds before PopulateUILeaderboardHelper is called (to give API time to respond)
+        PlayFabController.Instance.GetLeaderboardEntries(() =>
+        {
+            PopulateUILeaderboardHelper();
+        });
     }
 
     private void PopulateUILeaderboardHelper()
@@ -87,7 +98,7 @@ public class LoginManager : MonoBehaviour
     }
 
 
-public void LogoutButton()
+    public void LogoutButton()
     {
         PlayFabController.Instance.Logout();
     }
@@ -98,10 +109,11 @@ public void LogoutButton()
 
         PlayFabController.Instance.SetUsername(userNameTextBox.text);
         PlayFabController.Instance.SetPlayFabID(result.PlayFabId);
-        PlayFabController.Instance.OnLogin();
-
-        PopulateAccountInfo();
-        PopulateUILeaderboard();
+        PlayFabController.Instance.OnLogin(() =>
+        {
+            PopulateAccountInfo();
+            PopulateUILeaderboard();
+        });
 
         LoginPanel.SetActive(false);    // hides the panel when login success.
     }
