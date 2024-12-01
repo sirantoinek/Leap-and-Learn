@@ -39,14 +39,14 @@ public class PlayFabController : MonoBehaviour
     {
         UpdateHighScore(0);
         // Just making placeholders for new user
-        SetHats(new Dictionary<string, bool> { { "EmptyHat", true } }); 
+        SetHats(new Dictionary<string, bool> { { "EmptyHat", true } });
         SetSkins(new Dictionary<string, bool> { { "EmptySkins", true } });
         SetCoins(0);
     }
 
     public void OnLogin()
     {
-        PullHighScore();
+        PullHighScore((tempHighScore) => { });
         GetAllPlayerData();
     }
 
@@ -117,7 +117,7 @@ public class PlayFabController : MonoBehaviour
     #region HighScore
     public int highScore = 0;
 
-    private void PullHighScore()
+    public void PullHighScore(Action<int> callback)
     {
         var request = new GetPlayerStatisticsRequest
         {
@@ -126,15 +126,19 @@ public class PlayFabController : MonoBehaviour
                 "PlayerHighScore"
             }
         };
-
-        PlayFabClientAPI.GetPlayerStatistics(request, OnStatisticGet, OnStatisticError);
+        PlayFabClientAPI.GetPlayerStatistics(request, (result) =>
+        {
+            highScore = result.Statistics.First().Value;
+            callback?.Invoke(highScore);
+        }, OnStatisticError);
     }
 
-    public int GetHighScore()
-    {
-        PullHighScore();
-        return highScore;
-    }
+    //TODO: remove if working
+    //public int GetHighScore()
+    //{
+    //    PullHighScore();
+    //    return highScore;
+    //}
 
     private void OnStatisticGet(GetPlayerStatisticsResult result)
     {
@@ -245,48 +249,56 @@ public class PlayFabController : MonoBehaviour
     private string currentSkin = "Green";
     private string currentHat;
 
-    public int GetCoins()
-    {
-        GetPlayerCoinData();
-        return coins;
-    }
+    //TODO: Remove if works
+    //public int GetCoins()
+    //{
+    //    GetPlayerCoinData();
+    //    return coins;
+    //}
 
     public void SetCoins(int coins)
     {
         SetCoinData(coins);
     }
 
-    public Dictionary<string, bool> GetHats()
-    {
-        GetPlayerHatsData();
-        return hats;
-    }
+    //TODO: remove if works...
+    //public Dictionary<string, bool> GetHats()
+    //{
+
+    //    GetPlayerHatsData();
+    //    return hats;
+    //}
 
     public void SetHats(Dictionary<string, bool> tempHats)
     {
         SetHatsData(tempHats);
     }
 
-    public Dictionary<string, bool> GetSkins()
-    {
-        GetPlayerSkinData();
-        return skins;
-    }
+    //TODO: remove if works...
+    //public Dictionary<string, bool> GetSkins()
+    //{
+    //    GetPlayerSkinData();
+    //    return skins;
+    //}
 
     public void SetSkins(Dictionary<string, bool> tempSkins)
     {
         SetSkinsData(tempSkins);
     }
-    public void SetCurrentSkin(string newCurrentSkin) {
+    public void SetCurrentSkin(string newCurrentSkin)
+    {
         currentSkin = newCurrentSkin;
     }
-    public string GetCurrentSkin() {
+    public string GetCurrentSkin()
+    {
         return currentSkin;
     }
-    public void SetCurrentHat(string newCurrentHat) {
+    public void SetCurrentHat(string newCurrentHat)
+    {
         currentHat = newCurrentHat;
     }
-    public string GetCurrentHat() {
+    public string GetCurrentHat()
+    {
         return currentHat;
     }
 
@@ -301,34 +313,60 @@ public class PlayFabController : MonoBehaviour
         PlayFabClientAPI.GetUserData(request, OnInventoryGet, OnInventoryError);
     }
 
-    private void GetPlayerCoinData()
+    public void GetPlayerCoinData(Action<int> callback)
     {
         var request = new GetUserDataRequest()
         {
             PlayFabId = playFabID,
             Keys = new List<string> { "Coins" }
         };
-        PlayFabClientAPI.GetUserData(request, OnInventoryGet, OnInventoryError);
+        PlayFabClientAPI.GetUserData(request, (result) =>
+        {
+            if (result.Data.ContainsKey("Coins"))
+            {
+                int.TryParse(result.Data["Coins"].Value, out coins);
+                Debug.Log($"{username} has {coins} coins");
+            }
+            callback?.Invoke(coins);
+        }, OnInventoryError);
     }
 
-    private void GetPlayerSkinData()
+    public void GetPlayerSkinData(Action<Dictionary<string, bool>> callback)
     {
         var request = new GetUserDataRequest()
         {
             PlayFabId = playFabID,
             Keys = new List<string> { "Skins" }
         };
-        PlayFabClientAPI.GetUserData(request, OnInventoryGet, OnInventoryError);
+        PlayFabClientAPI.GetUserData(request, (result) =>
+        {
+            skins = new Dictionary<string, bool>();
+            if (result.Data != null && result.Data.ContainsKey("Skins"))
+            {
+                string skinsJson = result.Data["Skins"].Value;
+                skins = JsonConvert.DeserializeObject<Dictionary<string, bool>>(skinsJson);
+            }
+            callback?.Invoke(skins);
+        }, OnInventoryError);
     }
 
-    private void GetPlayerHatsData()
+    public void GetPlayerHatsData(Action<Dictionary<string, bool>> callback)
     {
         var request = new GetUserDataRequest()
         {
             PlayFabId = playFabID,
             Keys = new List<string> { "Hats" }
         };
-        PlayFabClientAPI.GetUserData(request, OnInventoryGet, OnInventoryError);
+        PlayFabClientAPI.GetUserData(request, (result) =>
+        {
+            hats = new Dictionary<string, bool>();
+            if (result.Data != null && result.Data.ContainsKey("Hats"))
+            {
+                string hatsJson = result.Data["Hats"].Value;
+                hats = JsonConvert.DeserializeObject<Dictionary<string, bool>>(hatsJson);
+            }
+            callback?.Invoke(hats);
+        }, OnInventoryError);
     }
 
     private void SetCoinData(int newCoins)
@@ -388,8 +426,8 @@ public class PlayFabController : MonoBehaviour
             }
             if (result.Data.ContainsKey("Hats"))
             {
-                string skinsJson = result.Data["Hats"].Value;
-                hats = JsonConvert.DeserializeObject<Dictionary<string, bool>>(skinsJson);
+                string hatsJson = result.Data["Hats"].Value;
+                hats = JsonConvert.DeserializeObject<Dictionary<string, bool>>(hatsJson);
                 Debug.Log($"{username} has {hats.Count} hats");
             }
         }

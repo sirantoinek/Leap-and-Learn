@@ -55,8 +55,15 @@ public class LoginManager : MonoBehaviour
     private void PopulateAccountInfoHelper() // populate the account info page
     {
         AccountInfoUsername.text = ("Username: " + PlayFabController.Instance.GetUsername());
-        AccountInfoHighScore.text = ("Highscore: " + PlayFabController.Instance.GetHighScore());
-        AccountInfoCoinCount.text = ("Coins: " + PlayFabController.Instance.GetCoins());
+        PlayFabController.Instance.PullHighScore((tempHighScore) =>
+        {
+            AccountInfoHighScore.text = ("Highscore: " + tempHighScore);
+        });
+        PlayFabController.Instance.GetPlayerCoinData((tempCoins) =>
+        {
+            AccountInfoCoinCount.text = ("Coins: " + tempCoins);
+        });
+        
     }
 
     private void PopulateUILeaderboard()

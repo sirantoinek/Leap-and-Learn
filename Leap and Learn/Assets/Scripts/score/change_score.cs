@@ -43,10 +43,14 @@ public class change_score : MonoBehaviour
     void increaseScore(int tilesJumped)
     {
         score += tilesJumped;
-        if (score > PlayFabController.Instance.GetHighScore())
+        PlayFabController.Instance.PullHighScore((playfabHighScore) =>
         {
-            PlayFabController.Instance.UpdateHighScore(score);
-        }
+            if (score > playfabHighScore)
+            {
+                PlayFabController.Instance.UpdateHighScore(score);
+            }
+        });
+        
     }
 
     // Update the score in the textbox

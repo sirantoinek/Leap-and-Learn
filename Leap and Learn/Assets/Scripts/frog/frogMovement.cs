@@ -262,9 +262,12 @@ public class frogMovement : MonoBehaviour
 
         else if (other.gameObject.layer == LayerMask.NameToLayer("Coin"))
         {
-            int coins = PlayFabController.Instance.GetCoins();
-            coins += 1;
-            PlayFabController.Instance.SetCoins(coins);
+            PlayFabController.Instance.GetPlayerCoinData((tempCoins) =>
+            {
+                int coins = tempCoins;
+                coins += 1;
+                PlayFabController.Instance.SetCoins(coins);
+            });
             powerupSet.Remove(other.gameObject);
             Destroy(other.gameObject);
         }
