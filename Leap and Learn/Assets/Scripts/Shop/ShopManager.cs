@@ -175,11 +175,11 @@ public class ShopManager : MonoBehaviour
         //shows whats in the dictionary
         foreach (var frogSkin in playerFrogsDict)
         {
-            Debug.LogError($"ID: {frogSkin.Key}, Bool: {frogSkin.Value}");
+            Debug.Log($"ID: {frogSkin.Key}, Bool: {frogSkin.Value}");
         }
         foreach (var HatSkin in playerHatsDict)
         {
-            Debug.LogError($"ID: {HatSkin.Key}, Bool: {HatSkin.Value}");
+            Debug.Log($"ID: {HatSkin.Key}, Bool: {HatSkin.Value}");
         }
     }
     public void OffloadFrogData()
